@@ -59,7 +59,7 @@ const client = new SparkAPIWrapper(process.env.ACCESS_TOKEN);
 // Help and fallback commands
 //
 bot.onCommand("help", function (command) {
-    client.createMessage(command.message.roomId, "Hi, I am the Hello World bot !\n\nType /hello to see me in action.", { "markdown": true }, function (err, message) {
+    client.createMessage(command.message.roomId, "Hi, I am the assistant bot!\n\nType /ip to get ip information of your remote pc.", { "markdown": true }, function (err, message) {
         if (err) {
             console.log("WARNING: could not post message to room: " + command.message.roomId);
             return;
