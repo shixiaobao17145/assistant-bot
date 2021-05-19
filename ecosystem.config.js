@@ -1,12 +1,19 @@
 module.exports = {
   apps : [{
     script: 'index.js',
+    name: 'assistant bot',
+    // Options reference: https://pm2.io/doc/en/runtime/reference/ecosystem-file/
+    args: '',
+    instances: 1,
+    autorestart: true,
+    watch: false,
     watch: '.',
+    autorestart: true,
     env: {
       NODE_ENV: "development",
       DEBUG:"sparkbot*,samples*",
       PORT:8000,
-      ACCESS_TOKEN:""
+      ACCESS_TOKEN:"**************"
     },
   }],
 
