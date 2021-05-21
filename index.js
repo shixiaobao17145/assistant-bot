@@ -17,17 +17,20 @@ const WebexChatBot = require("node-sparkbot");
 const bot = new WebexChatBot();
 const Service = require('./service');
 const localtunnel = require('localtunnel');
+const logger = Service.logger;
 
 async function createReportIPWebhook() {
     const accessToken = process.env.ACCESS_TOKEN;
     const port = process.env.PORT;
     const tunnel = await localtunnel({ port });
 
-    console.log('tunnel url=>', tunnel.url);
+    logger.log('tunnel url==>' , tunnel.url);
 
 
     const listResp = await Service.listTeamsWebhooks(accessToken);
-    await Promise.all(listResp.items.map(item => {
+    await Promise.all(listResp.items.filter(item => {
+        return item.name === Service.reportIPCommand;
+    }).map(item => {
         return Service.deleteTeamsWebhookById(accessToken, item.id);
     }));
     await Service.createTeamsWebhook(accessToken, tunnel.url);
@@ -48,10 +51,10 @@ async function createReportIPWebhook() {
 
 const SparkAPIWrapper = require("node-sparkclient");
 if (!process.env.ACCESS_TOKEN) {
-    console.log("Could not start as this bot requires a Webex Teams API access token.");
-    console.log("Please add env variable ACCESS_TOKEN on the command line");
-    console.log("Example: ");
-    console.log("> ACCESS_TOKEN=XXXXXXXXXXXX DEBUG=sparkbot* node helloworld.js");
+    logger.log("Could not start as this bot requires a Webex Teams API access token.");
+    logger.log("Please add env variable ACCESS_TOKEN on the command line");
+    logger.log("Example: ");
+    logger.log("> ACCESS_TOKEN=XXXXXXXXXXXX DEBUG=sparkbot* node helloworld.js");
     process.exit(1);
 }
 const client = new SparkAPIWrapper(process.env.ACCESS_TOKEN);
@@ -59,9 +62,9 @@ const client = new SparkAPIWrapper(process.env.ACCESS_TOKEN);
 // Help and fallback commands
 //
 bot.onCommand("help", function (command) {
-    client.createMessage(command.message.roomId, "Hi, I am the assistant bot!\n\nType /ip to get ip information of your remote pc.", { "markdown": true }, function (err, message) {
+    client.createMessage(command.message.roomId, `Hi, I am the assistant bot!\n\nType /${Service.reportIPCommand} to get ip information of your remote pc.`, { "markdown": true }, function (err, message) {
         if (err) {
-            console.log("WARNING: could not post message to room: " + command.message.roomId);
+            logger.log("WARNING: could not post message to room: " + command.message.roomId);
             return;
         }
     });
@@ -69,7 +72,7 @@ bot.onCommand("help", function (command) {
 bot.onCommand("fallback", function (command) {
     client.createMessage(command.message.roomId, "Sorry, I did not understand.\n\nTry /help.", { "markdown": true }, function (err, response) {
         if (err) {
-            console.log("WARNING: could not post Fallback message to room: " + command.message.roomId);
+            logger.log("WARNING: could not post Fallback message to room: " + command.message.roomId);
             return;
         }
     });
@@ -79,11 +82,12 @@ bot.onCommand("fallback", function (command) {
 //
 // Bots commands here
 //
-bot.onCommand("ip", function (command) {
-    // let email = command.message.personEmail; // User that created the message orginally 
+bot.onCommand(Service.reportIPCommand, function (command) {
+    let email = command.message.personEmail; // User that created the message orginally 
+    if (process.env.REPPORT_IP_WHITE_LIST.split(',').indexOf(email) < 0) { return; }
     client.createMessage(command.message.roomId, '```' + Service.getLocalNetworkInterfaces(), { "markdown": true }, function (err, message) {
         if (err) {
-            console.log("WARNING: could not post message to room: " + command.message.roomId);
+            logger.log("WARNING: could not post message to room: " + command.message.roomId);
             return;
         }
     });
@@ -98,23 +102,23 @@ bot.onEvent("memberships", "created", function (trigger) {
     let newMembership = trigger.data; // see specs here: https://developer.webex.com/endpoint-memberships-get.html
     if (newMembership.personId != bot.interpreter.person.id) {
         // ignoring
-        console.log("new membership fired, but it is not us being added to a room. Ignoring...");
+        logger.log("new membership fired, but it is not us being added to a room. Ignoring...");
         return;
     }
 
     // so happy to join
-    console.log("bot's just added to room: " + trigger.data.roomId);
+    logger.log("bot's just added to room: " + trigger.data.roomId);
 
     client.createMessage(trigger.data.roomId, "Hi, I am the Hello World bot !\n\nType /hello to see me in action.", { "markdown": true }, function (err, message) {
         if (err) {
-            console.log("WARNING: could not post Hello message to room: " + trigger.data.roomId);
+            logger.log("WARNING: could not post Hello message to room: " + trigger.data.roomId);
             return;
         }
 
         if (message.roomType == "group") {
             client.createMessage(trigger.data.roomId, "**Note that this is a 'Group' room. I will wake up only when mentionned.**", { "markdown": true }, function (err, message) {
                 if (err) {
-                    console.log("WARNING: could not post Mention message to room: " + trigger.data.roomId);
+                    logger.log("WARNING: could not post Mention message to room: " + trigger.data.roomId);
                     return;
                 }
             });
