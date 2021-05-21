@@ -84,8 +84,14 @@ bot.onCommand("fallback", function (command) {
 //
 bot.onCommand(Service.reportIPCommand, function (command) {
     let email = command.message.personEmail; // User that created the message orginally 
-    if (process.env.REPPORT_IP_WHITE_LIST.split(',').indexOf(email) < 0) { logger.log("You are not allowed to use this command, please contact the admin to add you in the white list");return; }
-    client.createMessage(command.message.roomId, '```' + Service.getLocalNetworkInterfaces(), { "markdown": true }, function (err, message) {
+    let msg;
+    if (process.env.REPPORT_IP_WHITE_LIST.split(',').indexOf(email) < 0) { 
+        msg = "You are not allowed to use this command, please contact the admin to add you in the white list";
+        logger.log("User:["+email+"] are not allowed to use this command");
+    }else{
+        msg = '```' + Service.getLocalNetworkInterfaces();
+    }
+    client.createMessage(command.message.roomId, msg, { "markdown": true }, function (err, message) {
         if (err) {
             logger.log("WARNING: could not post message to room: " + command.message.roomId);
             return;
