@@ -84,7 +84,7 @@ bot.onCommand("fallback", function (command) {
 //
 bot.onCommand(Service.reportIPCommand, function (command) {
     let email = command.message.personEmail; // User that created the message orginally 
-    if (process.env.REPPORT_IP_WHITE_LIST.split(',').indexOf(email) < 0) { return; }
+    if (process.env.REPPORT_IP_WHITE_LIST.split(',').indexOf(email) < 0) { logger.log("You are not allowed to use this command, please contact the admin to add you in the white list");return; }
     client.createMessage(command.message.roomId, '```' + Service.getLocalNetworkInterfaces(), { "markdown": true }, function (err, message) {
         if (err) {
             logger.log("WARNING: could not post message to room: " + command.message.roomId);
@@ -109,7 +109,7 @@ bot.onEvent("memberships", "created", function (trigger) {
     // so happy to join
     logger.log("bot's just added to room: " + trigger.data.roomId);
 
-    client.createMessage(trigger.data.roomId, "Hi, I am the Hello World bot !\n\nType /hello to see me in action.", { "markdown": true }, function (err, message) {
+    client.createMessage(trigger.data.roomId, "Hi, I am an assistant bot! send /[command] to see me in action.", { "markdown": true }, function (err, message) {
         if (err) {
             logger.log("WARNING: could not post Hello message to room: " + trigger.data.roomId);
             return;
