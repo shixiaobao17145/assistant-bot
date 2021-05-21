@@ -1,3 +1,6 @@
+// Note: for pm2 startup config, you need add the line below to the sytemd service config file(/etc/systemd/system/pm2-bob.service on linux for example)
+// ExecStartPre=/bin/bash -c 'until host api.ciscospark.com; do sleep 1; done'
+
 module.exports = {
   apps : [{
     script: 'index.js',
@@ -6,13 +9,13 @@ module.exports = {
     args: '',
     instances: 1,
     autorestart: true,
-    watch: false,
     watch: '.',
-    autorestart: true,
     env: {
       NODE_ENV: "development",
-      DEBUG:"sparkbot*,samples*",
+      DEBUG:"sparkbot*, assistant*",
       PORT:8000,
+      REPORT_IP_COMMAND:'ip-remote-pc1',
+      REPPORT_IP_WHITE_LIST:"xiaobshi@cisco.com",
       ACCESS_TOKEN:"**************"
     },
   }],

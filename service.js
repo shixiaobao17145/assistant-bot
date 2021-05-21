@@ -1,7 +1,16 @@
 const os = require('os');
 const util = require('util');
+
+const log = require('debug')('assistant:log');
+const debug = require('debug')('assistant:debug', { useColors: true });
+log.log = console.log.bind(console);
+const logger = {
+    log,
+    debug
+}
 module.exports = {
-    reportIPWebhookName: 'Report IP',
+    logger,
+    reportIPCommand: process.env.REPORT_IP_COMMAND,
     listTeamsWebhooks: function (accessToken) {
         var request = require('request');
         var options = {
@@ -30,7 +39,7 @@ module.exports = {
         return new Promise((rs, rj) => {
             request(options, function (error, response) {
                 if (error) throw rj(error);
-                console.log('Old webhook deleted, id:', id);
+                logger.log('Old webhook deleted, id:', id);
                 rs(response.body);
             });
         })
@@ -43,7 +52,7 @@ module.exports = {
             }
         }
         data = Object.assign({
-            "name": this.reportIPWebhookName,
+            "name": this.reportIPCommand,
             "resource": "all",
             "event": "all",
             "targetUrl": "https://yellow-firefox-46.loca.lt/"
@@ -61,7 +70,7 @@ module.exports = {
         return new Promise((rs, rj) => {
             request(options, function (error, response) {
                 if (error) rj(error);
-                console.log(`New webhook with targetUrl:${data.targetUrl} created`);
+                logger.log(`New webhook with targetUrl:${data.targetUrl} created`);
                 rs(response.body);
             });
         })
