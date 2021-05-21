@@ -9,7 +9,7 @@ This is a [webex](https://www.webex.com/team-collaboration.html) chat bot with f
 ## Run the service
 1. Clone this repo to local
 2. Run `npm install` or `yarn` to install dependencies
-3. Run `DEBUG=sparkbot*,samples* PORT=8000 ACCESS_TOKEN=YOUR-BOT'S-ACCESS-TOKEN node index.js`
+3. Run `DEBUG=sparkbot*,assistant* PORT=8000 ACCESS_TOKEN=YOUR-BOT'S-ACCESS-TOKEN node index.js`
 
 > Or if you use [pm2](https://pm2.keymetrics.io/docs/usage/quick-start/) to make it running forever, I suggest you put the `DEBUG`,`PORT` and `ACCESS_TOKEN` info in the `ecosystem.config.js` file and do `pm2 start ecosystem.config.js` instead of the 3rd step of this section above.
 

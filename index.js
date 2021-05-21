@@ -19,16 +19,19 @@ const Service = require('./service');
 const localtunnel = require('localtunnel');
 const logger = Service.logger;
 
+let SUPPORT_IP_COMMANDS;
 async function createReportIPWebhook() {
     const accessToken = process.env.ACCESS_TOKEN;
     const port = process.env.PORT;
     const tunnel = await localtunnel({ port });
+    SUPPORT_IP_COMMANDS = [];
 
     logger.log('tunnel url==>' , tunnel.url);
 
 
     const listResp = await Service.listTeamsWebhooks(accessToken);
     await Promise.all(listResp.items.filter(item => {
+        SUPPORT_IP_COMMANDS.push('/' + item.name);
         return item.name === Service.reportIPCommand;
     }).map(item => {
         return Service.deleteTeamsWebhookById(accessToken, item.id);
@@ -69,7 +72,14 @@ bot.onCommand("help", function (command) {
         }
     });
 });
+
+
+// for support multiple users, we comment this out for now
 bot.onCommand("fallback", function (command) {
+    if(SUPPORT_IP_COMMANDS.indexOf(command.message.text)>-1){
+        logger.log(`command ${command.message.text} recogized, but not that I care, ignore it`);
+        return;
+    }
     client.createMessage(command.message.roomId, "Sorry, I did not understand.\n\nTry /help.", { "markdown": true }, function (err, response) {
         if (err) {
             logger.log("WARNING: could not post Fallback message to room: " + command.message.roomId);
@@ -85,7 +95,8 @@ bot.onCommand("fallback", function (command) {
 bot.onCommand(Service.reportIPCommand, function (command) {
     let email = command.message.personEmail; // User that created the message orginally 
     let msg;
-    if (process.env.REPPORT_IP_WHITE_LIST.split(',').indexOf(email) < 0) { 
+    const whiteList = process.env.REPPORT_IP_WHITE_LIST;
+    if (whiteList && whiteList.split(',').indexOf(email) < 0) { 
         msg = "You are not allowed to use this command, please contact the admin to add you in the white list";
         logger.log("User:["+email+"] are not allowed to use this command");
     }else{

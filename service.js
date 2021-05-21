@@ -10,7 +10,7 @@ const logger = {
 }
 module.exports = {
     logger,
-    reportIPCommand: process.env.REPORT_IP_COMMAND,
+    reportIPCommand: process.env.REPORT_IP_COMMAND || 'ip',
     listTeamsWebhooks: function (accessToken) {
         var request = require('request');
         var options = {
